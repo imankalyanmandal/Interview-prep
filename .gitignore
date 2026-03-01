@@ -1,0 +1,34 @@
+# Root .gitignore
+
+# Python
+*/venv/
+__pycache__/
+*.pyc
+*/audio_temp/
+
+# Java
+target/
+*.class
+*.jar
+
+# React
+node_modules/
+dist/
+build/
+
+# Environment files — VERY IMPORTANT
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+```
+
+---
+
+## 🔑 Golden Rule
+```
+If it can be generated or installed → don't push it
+If you wrote it yourself           → push it 

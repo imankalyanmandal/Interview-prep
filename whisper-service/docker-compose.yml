@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+
+  # ── React Frontend ────────────────────────────────────────────────────────
+  frontend:
+    build: ./interview-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+  # ── Spring Boot Backend ───────────────────────────────────────────────────
+  backend:
+    build: ./interview-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/interview_db
+      - CHROMA_URL=http://chromadb:8000
+      - WHISPER_SERVICE_URL=http://whisper:5002
+      - OLLAMA_URL=http://host.docker.internal:11434   # Ollama runs on host machine
+    depends_on:
+      - mongo
+      - chromadb
+      - whisper
+    extra_hosts:
+      - "host.docker.internal:host-gateway"           # allows container to reach host Ollama
+
+  # ── Whisper Transcription Service ─────────────────────────────────────────
+  whisper:
+    build:
+      context: ./whisper-service
+      args:
+        WHISPER_MODEL: base                            # change to 'small' for better accuracy
+    container_name: interview_whisper
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./whisper-service/audio_temp:/app/audio_temp  # temp audio files
+    environment:
+      - WHISPER_MODEL=base
+    # Whisper model is pre-downloaded during Docker build
+    # so first request is fast with no cold start delay
+
+  # ── MongoDB ───────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: interview_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # ── ChromaDB ──────────────────────────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: interview_chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+volumes:
+  mongo_data:
+  chroma_data:

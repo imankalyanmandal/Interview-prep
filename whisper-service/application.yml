@@ -1,0 +1,23 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/interview_db
+  servlet:
+    multipart:
+      max-file-size: 25MB      # Whisper audio files can be a few MB
+      max-request-size: 25MB
+
+whisper:
+  service:
+    url: http://localhost:5002  # overridden in Docker to http://whisper:5002
+
+ollama:
+  url: http://localhost:11434
+  model:
+    chat: llama3.2             # used for interview chat, evaluation, feedback
+    # nomic-embed-text is called directly by the Python ingestion script
+    # Spring Boot does NOT call the embed model — only ChromaDB query via HTTP
+
+chroma:
+  url: http://localhost:8000
+  collection: question_bank
